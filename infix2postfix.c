@@ -17,7 +17,7 @@ void push(char ele)
 
 char pop()
 {
-	if (stk.top == 0) {
+	if (stk.top == -1) {
 		printf("\n[E] Stack Underflow!\n");
 		exit(1);
 	}
@@ -38,6 +38,7 @@ int priority(char c)
 
 int main()
 {
+    stk.top=-1;
 	FILE *infile,*outfile;
 	char expr[60],*e, x,c;
 	infile = fopen("tokenizer.txt","r");
@@ -47,20 +48,22 @@ int main()
 			if ( (isalnum(c)) || (c == '.') ) {
 				fprintf(outfile,"%c", c);
 			}
-			else if (c == '\n') {}
+			else if (c == '\n' || c == ' ') {}
 			else if (c == ')') {
 				while ( (x = pop()) != '(')
 				fprintf(outfile,"\n%c", x);
 			}
-			else if (c == '(') push(c);
+			else if (c == '(') {
+				fprintf(outfile,"\n");
+				push(c);
+			}
 			else {
 				fprintf(outfile,"\n");
 				while ( priority(stk.items[stk.top]) >= priority(c) ) fprintf(outfile,"%c\n", pop());
 				push(c);
-
 			}
 		}
-		fprintf(outfile,"\n%c", pop());
+		while (stk.top>-1) {fprintf(outfile,"\n%c", pop());}
 	}
 	fclose(infile);
 	fclose(outfile);
