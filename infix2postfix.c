@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #define STKSZ 100
 
-struct stack { char items[STKSZ]; int top} stk;
+struct stack { char items[STKSZ]; int top;} stk;
 
 void push(char ele)
 {
@@ -16,7 +17,7 @@ void push(char ele)
 
 char pop()
 {
-	if (stk.top == -1) {
+	if (stk.top == 0) {
 		printf("\n[E] Stack Underflow!\n");
 		exit(1);
 	}
@@ -35,48 +36,33 @@ int priority(char c)
 	}
 }
 
-void append(char* s, char c) {
-        int len = strlen(s);
-        s[len] = c;
-        s[len+1] = '\0';
-}
-
-main()
+int main()
 {
-    char number;
-    FILE *infile,*outfile;
-	char expr[100],*e, x,c;
-	stk.top = -1;
+	FILE *infile,*outfile;
+	char expr[60],*e, x,c;
 	infile = fopen("tokenizer.txt","r");
 	outfile=fopen("postfix.txt","w+");
-	c= fgetc(infile );
-	while (c!=EOF)
-            {
-                append(expr,c);
-                c=fgetc(infile);
-            }
-    for (e = expr; *e != '\0'; e++)
-	{
-		if (isalnum(*e))
-			fprintf(outfile,"%c", *e);
-		else if (*e == ')')
-		{
-			while ( (x = pop()) != '(')
-				fprintf(outfile,"%c", x);
-		}
-		else if (*e == '(')
-			push(*e);
-		else
-		{
-			while ( priority(stk.items[stk.top]) >= priority(*e) )
-				fprintf(outfile,"%c", pop());
-			push(*e);
-		}
-	}
+	if (infile) {
+		while ((c = getc(infile)) != EOF) {
+			if ( (isalnum(c)) || (c == '.') ) {
+				fprintf(outfile,"%c", c);
+			}
+			else if (c == '\n') {}
+			else if (c == ')') {
+				while ( (x = pop()) != '(')
+				fprintf(outfile,"\n%c", x);
+			}
+			else if (c == '(') push(c);
+			else {
+				fprintf(outfile,"\n");
+				while ( priority(stk.items[stk.top]) >= priority(c) ) fprintf(outfile,"%c\n", pop());
+				push(c);
 
-	while (stk.top != -1)
-		fprintf(outfile,"%c", pop());
-	putchar('\n');
-    fclose(infile);
-    fclose(outfile);
+			}
+		}
+		fprintf(outfile,"\n%c", pop());
+	}
+	fclose(infile);
+	fclose(outfile);
+	return 0;
 }
